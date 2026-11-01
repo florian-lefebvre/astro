@@ -245,6 +245,37 @@ describe('attachDataStoreInvalidation', () => {
 		assert.equal(countClientReloads(mockServer), 2, 'a later external change should reload');
 	});
 
+	it('does not send full-reload for writes before the server is listening (#18568)', async (t) => {
+		const root = createTempDir('content-data-store-startup-write-test-');
+		const settings = createMinimalSettings(root, { config: { legacy: {} } });
+		const dataStoreFile = getDataStoreFile(settings, true);
+		await nodeFs.promises.mkdir(settings.dotAstroDir, { recursive: true });
+
+		t.mock.timers.enable({ apis: ['Date'], now: 10_000 });
+		t.after(() => mock.timers.reset());
+
+		const httpServer = { listening: false };
+		const mockServer = { ...createMockViteDevServer(), httpServer };
+		const store = await MutableDataStore.fromFile(dataStoreFile);
+		// @ts-expect-error - mock server has enough structure for this test
+		attachDataStoreInvalidation(store, mockServer, settings);
+
+		store.set('dogs', 'beagle', { id: 'beagle', data: { breed: 'Beagle' } });
+		await store.waitUntilSaveComplete();
+
+		assert.equal(countClientReloads(mockServer), 0, 'a startup write should not reload clients');
+		const contentChanged = mockServer.sentMessages.filter(
+			(msg) => msg.channel === 'ssr' && msg.type === 'astro:content-changed',
+		);
+		assert.equal(contentChanged.length, 1, 'a startup write should still invalidate the server');
+
+		httpServer.listening = true;
+		store.set('dogs', 'poodle', { id: 'poodle', data: { breed: 'Poodle' } });
+		await store.waitUntilSaveComplete();
+
+		assert.equal(countClientReloads(mockServer), 1, 'a write after startup should reload clients');
+	});
+
 	it('invalidates the prerender environment when it exists (#17991)', async (t) => {
 		const root = createTempDir('content-data-store-prerender-invalidation-test-');
 		const settings = createMinimalSettings(root, { config: { legacy: {} } });

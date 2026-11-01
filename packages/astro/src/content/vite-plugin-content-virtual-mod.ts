@@ -147,7 +147,10 @@ export function attachDataStoreInvalidation(
 	store.onFileWritten((path) => {
 		if (path === dataStorePath) {
 			markDirectInvalidation(dataStorePath);
-			invalidateDataStore(server);
+			// Writes from the initial sync in `astro dev` happen before the server
+			// listens, so no browser has loaded content yet. Vite would buffer a
+			// full-reload and deliver it to the first client that connects (#18568).
+			invalidateDataStore(server, { notifyClient: server.httpServer?.listening !== false });
 			invalidateAssetImports(server, assetImportsPath);
 		} else if (path === assetImportsPath) {
 			markDirectInvalidation(assetImportsPath);

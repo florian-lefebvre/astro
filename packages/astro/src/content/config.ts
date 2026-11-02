@@ -3,6 +3,7 @@ import type * as z from 'zod/v4';
 import { AstroError, AstroErrorData, AstroUserError } from '../core/errors/index.js';
 import { CONTENT_LAYER_TYPE, LIVE_CONTENT_TYPE } from './consts.js';
 import type { LiveLoader, Loader } from './loaders/types.js';
+import type { CollectionDescriptors } from './metadata.js';
 
 function getImporterFilename() {
 	// Find the first line in the stack trace that doesn't include 'defineCollection' or 'getImporterFilename'
@@ -87,6 +88,11 @@ type ContentLayerConfig<S extends BaseSchema, TLoader extends LoaderConstraint<{
 	type?: 'content_layer';
 	schema?: S | ((context: SchemaContext) => S);
 	loader: TLoader;
+	/**
+	 * Serializable values identifying the collection, returned by `getCollectionsMetadata()`.
+	 * They override the descriptors of the loader with the same key.
+	 */
+	descriptors?: CollectionDescriptors;
 };
 
 type DataCollectionConfig<S extends BaseSchema> = {
@@ -107,6 +113,11 @@ export type LiveCollectionConfig<
 	type?: 'live';
 	schema?: S;
 	loader: L;
+	/**
+	 * Serializable values identifying the collection, returned by `getCollectionsMetadata()`.
+	 * They override the descriptors of the loader with the same key.
+	 */
+	descriptors?: CollectionDescriptors;
 };
 
 export type CollectionConfig<

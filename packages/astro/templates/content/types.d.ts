@@ -45,6 +45,20 @@ declare module 'astro:content' {
 		filter?: (entry: CollectionEntry<C>) => unknown,
 	): Promise<CollectionEntry<C>[]>;
 
+	/** Facts about a collection, never its entries. Pass `name` to `getCollection()` or `getLiveCollection()`, depending on `type`. */
+	export type CollectionMetadata =
+		| (Omit<import('astro').CollectionMetadata, 'name' | 'type'> & {
+				name: Extract<keyof DataEntryMap, string>;
+				type: 'build-time';
+		  })
+		| (Omit<import('astro').CollectionMetadata, 'name' | 'type'> & {
+				name: Extract<keyof LiveContentConfig['collections'], string>;
+				type: 'live';
+		  });
+
+	/** Returns the metadata of every collection of the project, build-time then live, without loading entries. Requires `experimental.collectionMetadata`. */
+	export function getCollectionsMetadata(): Promise<CollectionMetadata[]>;
+
 	export function getLiveCollection<C extends keyof LiveContentConfig['collections']>(
 		collection: C,
 		filter?: LiveLoaderCollectionFilterType<C>,

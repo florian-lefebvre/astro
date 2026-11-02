@@ -2115,6 +2115,37 @@ export const FileGlobNotSupported = {
 
 /**
  * @docs
+ * @message
+ * **Example error message:**<br/>
+ * `getCollectionsMetadata()` requires the `experimental.collectionMetadata` flag.
+ * @description
+ * `getCollectionsMetadata()` was called, but the `experimental.collectionMetadata` flag is not enabled. Enable the flag in your Astro config to list the collections of your project.
+ */
+export const CollectionMetadataNotEnabled = {
+	name: 'CollectionMetadataNotEnabled',
+	title: 'Collection metadata is not enabled.',
+	message: '`getCollectionsMetadata()` requires the `experimental.collectionMetadata` flag.',
+	hint: 'Set `experimental.collectionMetadata` to `true` in your Astro config.',
+} satisfies ErrorData;
+
+/**
+ * @docs
+ * @message
+ * **Example error message:**<br/>
+ * The descriptors of the collection `docs` have a value that can't be serialized to JSON: `descriptors.since`.
+ * @description
+ * Collection descriptors are passed to your pages and integrations as data, so they must be JSON-serializable: strings, finite numbers, booleans, `null`, arrays and plain objects. The descriptors of a collection combine those of its loader and those passed to `defineCollection()`.
+ */
+export const InvalidCollectionDescriptors = {
+	name: 'InvalidCollectionDescriptors',
+	title: 'Invalid collection descriptors.',
+	message: (collection: string, path: string) =>
+		`The descriptors of the collection \`${collection}\` have a value that can't be serialized to JSON: \`${path}\`.`,
+	hint: 'Collection descriptors must be strings, finite numbers, booleans, `null`, arrays or plain objects.',
+} satisfies ErrorData;
+
+/**
+ * @docs
  * @kind heading
  * @name Action Errors
  */

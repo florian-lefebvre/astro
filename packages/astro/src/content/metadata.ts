@@ -1,27 +1,11 @@
+import type {
+	CollectionDescriptors,
+	CollectionMetadata,
+	JSONValue,
+} from '@astrojs/internal-helpers/collections';
 import { AstroError, AstroErrorData } from '../core/errors/index.js';
 
-export type JSONValue =
-	| string
-	| number
-	| boolean
-	| null
-	| JSONValue[]
-	| { [key: string]: JSONValue };
-
-/**
- * Serializable values attached to a collection by its loader or by `defineCollection()`, so
- * other code can recognize the collection without knowing its name.
- */
-export type CollectionDescriptors = Record<string, JSONValue>;
-
-/** Facts about a collection, never its entries. */
-export interface CollectionMetadata {
-	name: string;
-	type: 'build-time' | 'live';
-	loader: { name: string };
-	/** Descriptors from the loader and from the collection config, the latter taking precedence. */
-	descriptors: CollectionDescriptors;
-}
+export type { CollectionDescriptors, CollectionMetadata, JSONValue };
 
 interface CollectionWithDescriptors {
 	type?: string;

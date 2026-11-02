@@ -378,8 +378,19 @@ export function glob(globOptions: GlobOptions & { [secretLegacyFlag]?: boolean }
 			const isNegation = (p: string) => p.startsWith('!') && !p.startsWith('!(');
 			const positivePatterns = patterns.filter((p) => !isNegation(p));
 			const negationPatterns = patterns.filter(isNegation).map((p) => p.slice(1));
+			const isIgnored = negationPatterns.length > 0 ? picomatch(negationPatterns) : () => false;
+			// tinyglobby skips a directory whose path matches a negation, so `!_docs` also
+			// excludes `_docs/x.md`. Check every ancestor directory to match that (#18590).
+			const isInIgnoredDir = (entry: string) => {
+				const segments = entry.split('/');
+				for (let i = 1; i < segments.length; i++) {
+					if (isIgnored(segments.slice(0, i).join('/'))) return true;
+				}
+				return false;
+			};
 			const matchesGlob = (entry: string) =>
 				!entry.startsWith('../') &&
+				!isInIgnoredDir(entry) &&
 				picomatch.isMatch(entry, positivePatterns, {
 					ignore: negationPatterns.length > 0 ? negationPatterns : undefined,
 				});
